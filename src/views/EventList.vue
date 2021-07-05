@@ -6,6 +6,22 @@
       :key="`event-${event.id}`"
       :event="event"
     />
+    <div class="pagination">
+      <router-link
+        id="page-prev"
+        ref="prev"
+        :to="{ name: 'EventList', query: { page: page - 1 } }"
+        v-if="page > 1"
+        >&#60; Previous</router-link
+      >
+      <router-link
+        id="page-next"
+        ref="next"
+        :to="{ name: 'EventList', query: { page: page + 1 } }"
+        v-if="!isLastPage"
+        >Next &#62;</router-link
+      >
+    </div>
   </div>
 </template>
 
@@ -13,14 +29,17 @@
 // @ is an alias to /src
 import EventCard from '@/components/EventCard.vue'
 import EventService from '@/services/EventService'
+import { watchEffect } from 'vue'
 
 export default {
   name: 'EventList',
   components: {
     EventCard,
   },
+  props: ['page'],
   data() {
     return {
+      totalEvents: 0,
       events: [
         // {
         //   id: 3456,
@@ -44,28 +63,27 @@ export default {
         //   petsAllowed: true,
         //   organizer: 'Fern Pollin',
         // },
-        // {
-        //   id: 3458,
-        //   category: 'sustainability',
-        //   title: 'Beach Cleanup',
-        //   description: 'Help pick up trash along the beach shore',
-        //   location: 'Playa Del Carmen',
-        //   date: 'July 22, 2022',
-        //   time: '11:00',
-        //   petsAllowed: false,
-        //   organizer: 'Carey Wales',
-        // },
       ],
     }
   },
   created() {
-    EventService.getEvents()
-      .then((response) => {
-        this.events = response.data
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+    watchEffect(() => {
+      this.events = []
+      EventService.getEvents(2, this.page)
+        .then((response) => {
+          this.events = response.data
+          this.totalEvents = response.headers['x-total-count']
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+    })
+  },
+  computed: {
+    isLastPage() {
+      const lastPage = Math.ceil(this.totalEvents / 2)
+      return this.page >= lastPage
+    },
   },
 }
 </script>
@@ -75,5 +93,24 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.pagination {
+  display: flex;
+  width: 290px;
+}
+
+.pagination a {
+  flex: 1;
+  text-decoration: none;
+  color: #2c3e50;
+}
+
+#page-prev {
+  text-align: left;
+}
+
+#page-next {
+  text-align: right;
 }
 </style>

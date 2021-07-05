@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-  baseURL: 'https://my-json-server.typicode.com/Code-Pop/Real-World_Vue-3',
+  baseURL: 'https://my-json-server.typicode.com/Code-Pop/Touring-Vue-Router',
   withCredentials: false,
   headers: {
     Accept: 'application/json',
@@ -10,8 +10,8 @@ const axiosClient = axios.create({
 })
 
 export default {
-  getEvents() {
-    return axiosClient.get('/events')
+  getEvents(perPage, page) {
+    return axiosClient.get('/events?_limit=' + perPage + '&_page=' + page)
   },
 
   getEventDetails(id) {
